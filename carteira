@@ -169,7 +169,7 @@
     <script>
         // CONFIGURAÇÃO DE SEGURANÇA
         // Mude '1234' para a senha que você quiser
-        const MY_PASSWORD = '3210'; 
+        const MY_PASSWORD = '1234'; 
 
         // CONFIGURAÇÃO DE DADOS
         let brapiToken = localStorage.getItem('brapi_token') || 'vp'; 
@@ -301,4 +301,26 @@
             const isUp = data.change >= 0;
             const badgeClass = isUp ? 'up' : 'down';
             const sign = isUp ? '+' : '';
-            const color = isUp ? '#34C759'
+            const color = isUp ? '#34C759' : '#FF3B30';
+            const sparklineSVG = generateFakeSparkline(isUp, color);
+            return `
+            <div class="card">
+                <div class="card-header"><span class="ticker">${asset.id}</span><span class="badge ${badgeClass}">${sign}${data.change.toFixed(2)}%</span></div>
+                <div class="price-container"><div class="price">${data.symbol} ${data.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div><div class="name">${asset.name}</div></div>
+                ${sparklineSVG}
+            </div>`;
+        }
+
+        function generateFakeSparkline(isUp, color) {
+            let path = "M 0 25 "; let y = 25;
+            for(let i=1; i<=10; i++) {
+                const randomMove = (Math.random() * 10) - (isUp ? 2 : 8);
+                y = y + (isUp ? -Math.abs(randomMove) + 2 : Math.abs(randomMove) - 2); 
+                y = Math.max(0, Math.min(30, y));
+                path += `L ${i*10} ${y} `;
+            }
+            return `<svg class="sparkline" viewBox="0 0 100 30" preserveAspectRatio="none"><path d="${path}" stroke="${color}" stroke-width="2" fill="none" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
+    </script>
+</body>
+</html>
