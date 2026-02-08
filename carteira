@@ -172,7 +172,7 @@
         const MY_PASSWORD = '1234'; 
 
         // CONFIGURAÇÃO DE DADOS
-        let brapiToken = localStorage.getItem('brapi_token') || 'vp'; 
+        let brapiToken = 'ajYyxYZW6sDcxQ6QLk1JPm'; 
         
         const assets = [
             { id: 'USD', type: 'currency', name: 'Dólar Comercial' },
