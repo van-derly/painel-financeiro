@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Finanças">
+    <title>Painel Privado</title>
+    
+    <style>
+        /* --- ESTILOS GERAIS (MANTIDOS) --- */
+        :root {
+            --bg-color: #F2F2F7;
+            --card-bg: #FFFFFF;
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --up-color: #34C759;
+            --up-bg: rgba(52, 199, 89, 0.15);
+            --down-color: #FF3B30;
+            --down-bg: rgba(255, 59, 48, 0.15);
+            --neutral-color: #8E8E93;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --card-bg: #1C1C1E;
+                --text-primary: #FFFFFF;
+                --text-secondary: #98989D;
+                --shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            padding-bottom: 80px; 
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* --- TELA DE BLOQUEIO (NOVO) --- */
+        #lock-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--bg-color);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .lock-content {
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .lock-input {
+            width: 100%;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 12px;
+            border: 1px solid var(--text-secondary);
+            font-size: 18px;
+            text-align: center;
+            background: var(--card-bg);
+            color: var(--text-primary);
+            -webkit-appearance: none;
+        }
+
+        .lock-btn {
+            background-color: #007AFF;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .hidden { display: none !important; }
+
+        /* --- RESTO DO LAYOUT --- */
+        header {
+            padding-top: max(20px, env(safe-area-inset-top));
+            padding-bottom: 10px;
+            padding-left: 20px;
+            padding-right: 20px;
+            background: var(--bg-color);
+        }
+
+        h1 { font-size: 28px; font-weight: 800; margin: 10px 0 5px 0; }
+        .subtitle { font-size: 13px; color: var(--text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px 20px; }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 18px;
+            padding: 16px;
+            box-shadow: var(--shadow);
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 110px; position: relative; transition: transform 0.2s;
+        }
+        .card:active { transform: scale(0.96); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .ticker { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
+        .badge { font-size: 11px; font-weight: 700; padding: 4px 6px; border-radius: 6px; }
+        .up { color: var(--up-color); background-color: var(--up-bg); }
+        .down { color: var(--down-color); background-color: var(--down-bg); }
+        .price-container { margin-top: 10px; }
+        .price { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .name { font-size: 10px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sparkline { width: 100%; height: 30px; margin-top: 8px; opacity: 0.7; }
+
+        /* Notícias Ticker */
+        .news-ticker {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: rgba(29, 29, 31, 0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-top: 0.5px solid rgba(255,255,255,0.1); display: flex; align-items: center; overflow: hidden; z-index: 100;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .ticker-wrap { width: 100%; overflow: hidden; white-space: nowrap; }
+        .ticker-move { display: inline-block; animation: ticker 25s linear infinite; }
+        .ticker-item { display: inline-block; padding: 0 20px; font-size: 14px; color: white; }
+        .ticker-source { font-weight: bold; color: #0A84FF; }
+        @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+    </style>
+</head>
+<body>
+
+    <div id="lock-screen">
+        <div class="lock-content">
+            <h1>🔒 Protegido</h1>
+            <p class="subtitle">Digite a senha de acesso</p>
+            <input type="password" id="user-password" class="lock-input" placeholder="Senha" inputmode="numeric">
+            <button onclick="checkPassword()" class="lock-btn">Entrar</button>
+            <p id="error-msg" style="color: red; font-size: 12px; margin-top: 10px; display: none;">Senha incorreta</p>
+        </div>
+    </div>
+
+    <div id="app-content" class="hidden">
+        <header>
+            <div class="subtitle" id="last-update">Atualizando...</div>
+            <h1>Mercado Hoje</h1>
+        </header>
+
+        <div class="grid" id="cards-container"></div>
+
+        <div class="news-ticker">
+            <div class="ticker-wrap">
+                <div class="ticker-move" id="news-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO DE SEGURANÇA
+        // Mude '1234' para a senha que você quiser
+        const MY_PASSWORD = '3210'; 
+
+        // CONFIGURAÇÃO DE DADOS
+        let brapiToken = localStorage.getItem('brapi_token') || 'vp'; 
+        
+        const assets = [
+            { id: 'USD', type: 'currency', name: 'Dólar Comercial' },
+            { id: 'BTC', type: 'crypto', name: 'Bitcoin' },
+            { id: 'IBOV', type: 'index', name: 'Ibovespa' },
+            { id: 'BBAS3', type: 'stock', name: 'Banco do Brasil' },
+            { id: 'BBDC3', type: 'stock', name: 'Bradesco ON' },
+            { id: 'JBSS3', type: 'stock', name: 'JBS' }, 
+            { id: 'SBSP3', type: 'stock', name: 'Sabesp' },
+            { id: 'WEGE3', type: 'stock', name: 'WEG S.A.' }
+        ];
+
+        const news = [
+            { source: 'InfoMoney', title: 'Ibovespa futuro opera em alta com exterior' },
+            { source: 'CoinDesk', title: 'Bitcoin busca novo suporte nos US$ 45k' },
+            { source: 'Valor', title: 'Dólar cai com dados de inflação nos EUA' },
+            { source: 'Bloomberg', title: 'Mercados globais reagem à decisão do FED' }
+        ];
+
+        // --- SISTEMA DE LOGIN ---
+        function checkPassword() {
+            const input = document.getElementById('user-password').value;
+            if(input === MY_PASSWORD) {
+                unlockApp();
+                // Salva que o usuário já logou neste dispositivo
+                localStorage.setItem('is_logged_in', 'true');
+            } else {
+                document.getElementById('error-msg').style.display = 'block';
+            }
+        }
+
+        function unlockApp() {
+            document.getElementById('lock-screen').classList.add('hidden');
+            document.getElementById('app-content').classList.remove('hidden');
+            initApp(); // Inicia o carregamento de dados só após a senha
+        }
+
+        // Verifica se já logou antes
+        window.onload = function() {
+            if(localStorage.getItem('is_logged_in') === 'true') {
+                unlockApp();
+            }
+        }
+
+        // --- LÓGICA DO APP ---
+        const container = document.getElementById('cards-container');
+        const updateLabel = document.getElementById('last-update');
+
+        function initApp() {
+            renderSkeleton();
+            renderNews();
+            fetchData();
+            setInterval(fetchData, 60000);
+        }
+
+        function renderSkeleton() {
+            container.innerHTML = '';
+            assets.forEach(asset => {
+                container.innerHTML += createCardHTML(asset, null, true);
+            });
+        }
+
+        function renderNews() {
+            const newsContainer = document.getElementById('news-content');
+            let html = '';
+            news.forEach(n => {
+                html += `<div class="ticker-item"><span class="ticker-source">${n.source}:</span> ${n.title}</div>`;
+            });
+            newsContainer.innerHTML = html + html + html; 
+        }
+
+        async function fetchData() {
+            updateLabel.innerText = "Atualizando...";
+            try {
+                const coinsResponse = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL');
+                const coinsData = await coinsResponse.json();
+
+                const tickers = assets.filter(a => a.type === 'stock' || a.type === 'index').map(a => a.id).join(',');
+                const specificStocksUrl = `https://brapi.dev/api/quote/${tickers},^BVSP?token=${brapiToken}`;
+                
+                const stocksResponse = await fetch(specificStocksUrl);
+                const stocksJson = await stocksResponse.json();
+                
+                const stockMap = {};
+                if(stocksJson.results) {
+                    stocksJson.results.forEach(s => {
+                        stockMap[s.symbol] = s;
+                        stockMap[s.symbol.replace('^BVSP', 'IBOV')] = s;
+                    });
+                }
+
+                container.innerHTML = '';
+                assets.forEach(asset => {
+                    let data = null;
+                    if (asset.type === 'currency' && asset.id === 'USD') {
+                        const d = coinsData.USDBRL;
+                        data = { price: parseFloat(d.bid), change: parseFloat(d.pctChange), symbol: 'R$' };
+                    } else if (asset.type === 'crypto' && asset.id === 'BTC') {
+                        const d = coinsData.BTCBRL;
+                        data = { price: parseFloat(d.bid), change: parseFloat(d.pctChange), symbol: 'R$' };
+                    } else {
+                        const key = asset.id === 'IBOV' ? '^BVSP' : asset.id;
+                        const s = stockMap[key];
+                        if (s) {
+                            data = { price: s.regularMarketPrice, change: s.regularMarketChangePercent, symbol: 'R$' };
+                        }
+                    }
+                    container.innerHTML += createCardHTML(asset, data);
+                });
+
+                const now = new Date();
+                updateLabel.innerText = "Atualizado às " + now.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+
+            } catch (error) {
+                console.error(error);
+                updateLabel.innerText = "Erro. Toque para recarregar.";
+                updateLabel.onclick = fetchData;
+            }
+        }
+
+        function createCardHTML(asset, data, loading = false) {
+            if (loading) {
+                return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="price-container"><div class="price" style="opacity:0.3">---</div></div></div>`;
+            }
+            if (!data) return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="name">Indisponível</div></div>`;
+            const isUp = data.change >= 0;
+            const badgeClass = isUp ? 'up' : 'down';
+            const sign = isUp ? '+' : '';
+            const color = isUp ? '#34C759'
