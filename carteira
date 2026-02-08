@@ -9,7 +9,7 @@
     <title>Painel Privado</title>
     
     <style>
-        /* --- ESTILOS GERAIS (MANTIDOS) --- */
+        /* --- ESTILOS GERAIS --- */
         :root {
             --bg-color: #F2F2F7;
             --card-bg: #FFFFFF;
@@ -45,7 +45,7 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- TELA DE BLOQUEIO (NOVO) --- */
+        /* --- TELA DE BLOQUEIO --- */
         #lock-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -91,7 +91,7 @@
 
         .hidden { display: none !important; }
 
-        /* --- RESTO DO LAYOUT --- */
+        /* --- LAYOUT --- */
         header {
             padding-top: max(20px, env(safe-area-inset-top));
             padding-bottom: 10px;
@@ -168,19 +168,20 @@
 
     <script>
         // CONFIGURAÇÃO DE SEGURANÇA
-        // Mude '1234' para a senha que você quiser
-        const MY_PASSWORD = '1234'; 
+        const MY_PASSWORD = '3210'; // Mude sua senha aqui
 
         // CONFIGURAÇÃO DE DADOS
+        // --- ATENÇÃO: COLE SEU TOKEN DA BRAPI ABAIXO ONDE DIZ 'COLE_SEU_TOKEN_AQUI' ---
         let brapiToken = 'ajYyxYZW6sDcxQ6QLk1JPm'; 
         
         const assets = [
             { id: 'USD', type: 'currency', name: 'Dólar Comercial' },
-            { id: 'BTC', type: 'crypto', name: 'Bitcoin' },
+            { id: 'BTC', type: 'crypto', name: 'Bitcoin (BRL)' },
+            { id: 'BTCUSD', type: 'crypto', name: 'Bitcoin (USD)' }, // NOVO: Bitcoin em Dólar
             { id: 'IBOV', type: 'index', name: 'Ibovespa' },
             { id: 'BBAS3', type: 'stock', name: 'Banco do Brasil' },
             { id: 'BBDC3', type: 'stock', name: 'Bradesco ON' },
-            { id: 'JBSS3', type: 'stock', name: 'JBS' }, 
+            { id: 'JBSS32', type: 'stock', name: 'JBS N.V. (BDR)' }, // ATUALIZADO: BDR
             { id: 'SBSP3', type: 'stock', name: 'Sabesp' },
             { id: 'WEGE3', type: 'stock', name: 'WEG S.A.' }
         ];
@@ -197,7 +198,6 @@
             const input = document.getElementById('user-password').value;
             if(input === MY_PASSWORD) {
                 unlockApp();
-                // Salva que o usuário já logou neste dispositivo
                 localStorage.setItem('is_logged_in', 'true');
             } else {
                 document.getElementById('error-msg').style.display = 'block';
@@ -207,10 +207,9 @@
         function unlockApp() {
             document.getElementById('lock-screen').classList.add('hidden');
             document.getElementById('app-content').classList.remove('hidden');
-            initApp(); // Inicia o carregamento de dados só após a senha
+            initApp();
         }
 
-        // Verifica se já logou antes
         window.onload = function() {
             if(localStorage.getItem('is_logged_in') === 'true') {
                 unlockApp();
@@ -247,10 +246,12 @@
         async function fetchData() {
             updateLabel.innerText = "Atualizando...";
             try {
-                const coinsResponse = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL');
+                // Adicionado BTC-USD na URL
+                const coinsResponse = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL,BTC-USD');
                 const coinsData = await coinsResponse.json();
 
                 const tickers = assets.filter(a => a.type === 'stock' || a.type === 'index').map(a => a.id).join(',');
+                // Nota: Usando token pessoal da Brapi configurado acima
                 const specificStocksUrl = `https://brapi.dev/api/quote/${tickers},^BVSP?token=${brapiToken}`;
                 
                 const stocksResponse = await fetch(specificStocksUrl);
@@ -267,12 +268,23 @@
                 container.innerHTML = '';
                 assets.forEach(asset => {
                     let data = null;
-                    if (asset.type === 'currency' && asset.id === 'USD') {
+                    
+                    // Lógica para Dólar
+                    if (asset.id === 'USD') {
                         const d = coinsData.USDBRL;
                         data = { price: parseFloat(d.bid), change: parseFloat(d.pctChange), symbol: 'R$' };
-                    } else if (asset.type === 'crypto' && asset.id === 'BTC') {
+                    
+                    // Lógica para Bitcoin em Reais
+                    } else if (asset.id === 'BTC') {
                         const d = coinsData.BTCBRL;
                         data = { price: parseFloat(d.bid), change: parseFloat(d.pctChange), symbol: 'R$' };
+                    
+                    // Lógica para Bitcoin em Dólar (Novo)
+                    } else if (asset.id === 'BTCUSD') {
+                        const d = coinsData.BTCUSD;
+                        data = { price: parseFloat(d.bid), change: parseFloat(d.pctChange), symbol: 'US$' };
+
+                    // Lógica para Ações e BDRs
                     } else {
                         const key = asset.id === 'IBOV' ? '^BVSP' : asset.id;
                         const s = stockMap[key];
@@ -298,14 +310,20 @@
                 return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="price-container"><div class="price" style="opacity:0.3">---</div></div></div>`;
             }
             if (!data) return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="name">Indisponível</div></div>`;
+            
             const isUp = data.change >= 0;
             const badgeClass = isUp ? 'up' : 'down';
             const sign = isUp ? '+' : '';
             const color = isUp ? '#34C759' : '#FF3B30';
             const sparklineSVG = generateFakeSparkline(isUp, color);
+            
+            // Título do Card (para BTCUSD ficar bonitinho)
+            let displayTicker = asset.id;
+            if(asset.id === 'BTCUSD') displayTicker = 'BTC (USD)';
+
             return `
             <div class="card">
-                <div class="card-header"><span class="ticker">${asset.id}</span><span class="badge ${badgeClass}">${sign}${data.change.toFixed(2)}%</span></div>
+                <div class="card-header"><span class="ticker">${displayTicker}</span><span class="badge ${badgeClass}">${sign}${data.change.toFixed(2)}%</span></div>
                 <div class="price-container"><div class="price">${data.symbol} ${data.price.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div><div class="name">${asset.name}</div></div>
                 ${sparklineSVG}
             </div>`;
