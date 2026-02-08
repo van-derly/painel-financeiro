@@ -90,11 +90,9 @@
         
         .price { 
             font-size: 20px; font-weight: 700; letter-spacing: -0.5px; 
-            /* Ajuste para quebrar linha se o preço duplo for muito grande em telas pequenas */
             word-wrap: break-word; line-height: 1.2;
         }
         
-        /* Estilo especial para o texto secundário (ex: o valor em reais no card duplo) */
         .price-secondary {
             color: var(--text-secondary);
             font-size: 0.85em;
@@ -148,12 +146,12 @@
     <script>
         // --- CONFIGURAÇÃO PESSOAL ---
         const MY_PASSWORD = '3210'; 
-        // COLE SEU TOKEN DA BRAPI ABAIXO:
+        // COLE SEU TOKEN DA BRAPI ABAIXO (MANTENHA AS ASPAS):
         let brapiToken = 'ajYyxYZW6sDcxQ6QLk1JPm'; 
         
         const assets = [
             { id: 'USD', type: 'currency', name: 'Dólar Comercial' },
-            { id: 'BTC', type: 'crypto', name: 'Bitcoin (Global)' }, // Agora um item só
+            { id: 'BTC', type: 'crypto', name: 'Bitcoin (Global)' }, 
             { id: 'IBOV', type: 'index', name: 'Ibovespa' },
             { id: 'BBAS3', type: 'stock', name: 'Banco do Brasil' },
             { id: 'BBDC3', type: 'stock', name: 'Bradesco ON' },
