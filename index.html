@@ -12,45 +12,28 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <style>
-        /* --- ESTILOS GERAIS --- */
         :root {
-            --bg-color: #F2F2F7;
-            --card-bg: #FFFFFF;
-            --text-primary: #000000;
-            --text-secondary: #8E8E93;
-            --accent-color: #007AFF;
-            --up-color: #34C759;
-            --up-bg: rgba(52, 199, 89, 0.15);
-            --down-color: #FF3B30;
-            --down-bg: rgba(255, 59, 48, 0.15);
-            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --bg-color: #F2F2F7; --card-bg: #FFFFFF; --text-primary: #000000;
+            --text-secondary: #8E8E93; --accent-color: #007AFF; --up-color: #34C759;
+            --up-bg: rgba(52, 199, 89, 0.15); --down-color: #FF3B30;
+            --down-bg: rgba(255, 59, 48, 0.15); --shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
-
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #000000;
-                --card-bg: #1C1C1E;
-                --text-primary: #FFFFFF;
-                --text-secondary: #98989D;
-                --shadow: 0 4px 12px rgba(0,0,0,0.3);
+                --bg-color: #000000; --card-bg: #1C1C1E; --text-primary: #FFFFFF;
+                --text-secondary: #98989D; --shadow: 0 4px 12px rgba(0,0,0,0.3);
             }
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0; padding: 0; padding-bottom: 80px; 
-            -webkit-user-select: none; user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            background-color: var(--bg-color); color: var(--text-primary);
+            margin: 0; padding: 0; padding-bottom: 80px; -webkit-user-select: none;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
-
-        /* --- TELA DE BLOQUEIO --- */
         #lock-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); z-index: 9999;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            padding: 20px; box-sizing: border-box;
+            background-color: var(--bg-color); z-index: 9999; display: flex;
+            flex-direction: column; justify-content: center; align-items: center; padding: 20px;
         }
         .lock-content { text-align: center; width: 100%; max-width: 300px; }
         .lock-input {
@@ -59,138 +42,81 @@
             background: var(--card-bg); color: var(--text-primary); -webkit-appearance: none;
         }
         .lock-btn {
-            background-color: var(--accent-color); color: white; border: none; padding: 15px 40px;
-            border-radius: 12px; font-size: 18px; font-weight: 600; width: 100%;
+            background-color: var(--accent-color); color: white; border: none;
+            padding: 15px 40px; border-radius: 12px; font-size: 18px; font-weight: 600; width: 100%;
         }
         .hidden { display: none !important; }
-
-        /* --- LAYOUT --- */
         header {
             padding-top: max(20px, env(safe-area-inset-top)); padding-bottom: 15px;
             padding-left: 20px; padding-right: 20px; background: var(--bg-color);
             display: flex; align-items: center; justify-content: space-between;
         }
-        
-        .header-profile {
-            display: flex; align-items: center; gap: 12px;
-        }
+        .header-profile { display: flex; align-items: center; gap: 12px; }
         .app-icon {
-            width: 44px; height: 44px; background: var(--accent-color);
-            border-radius: 12px; display: flex; align-items: center; justify-content: center;
-            color: white; font-size: 20px; box-shadow: 0 4px 10px rgba(0,122,255,0.3);
+            width: 44px; height: 44px; background: var(--accent-color); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; color: white;
+            font-size: 20px; box-shadow: 0 4px 10px rgba(0,122,255,0.3);
         }
         .user-info h1 { font-size: 20px; font-weight: 800; margin: 0; line-height: 1.1; }
-        .user-info p { font-size: 12px; color: var(--text-secondary); margin: 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .user-info p { font-size: 12px; color: var(--text-secondary); margin: 0; text-transform: uppercase; }
         .wallet-total { font-size: 13px; font-weight: 600; color: var(--up-color); margin-top: 2px; }
-
         .header-actions { display: flex; gap: 15px; }
         .icon-btn { font-size: 20px; color: var(--accent-color); cursor: pointer; padding: 5px; }
-
         .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px 20px; }
-
         .card {
             background-color: var(--card-bg); border-radius: 18px; padding: 16px;
-            box-shadow: var(--shadow); display: flex; flex-direction: column; justify-content: space-between;
-            min-height: 120px; position: relative; transition: transform 0.2s;
-            cursor: pointer;
+            box-shadow: var(--shadow); display: flex; flex-direction: column;
+            justify-content: space-between; min-height: 120px; transition: transform 0.2s; cursor: pointer;
         }
         .card:active { transform: scale(0.96); }
         .card-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        
         .ticker { font-size: 14px; font-weight: 700; color: var(--text-secondary); }
         .badge { font-size: 11px; font-weight: 700; padding: 4px 6px; border-radius: 6px; }
         .up { color: var(--up-color); background-color: var(--up-bg); }
         .down { color: var(--down-color); background-color: var(--down-bg); }
-        
         .price-container { margin-top: 8px; }
-        .price { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; word-wrap: break-word; line-height: 1.2; }
+        .price { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; word-wrap: break-word; }
         .price-secondary { color: var(--text-secondary); font-size: 0.85em; }
         .name { font-size: 10px; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* Nova área de Holdings no Card */
         .holding-info {
             font-size: 10px; color: var(--text-secondary); margin-top: 6px;
-            padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.1);
-            display: flex; justify-content: space-between;
+            padding-top: 6px; border-top: 1px solid rgba(128,128,128,0.1); display: flex; justify-content: space-between;
         }
         .holding-value { font-weight: 700; color: var(--text-primary); }
-
         .sparkline { width: 100%; height: 25px; margin-top: 8px; opacity: 0.7; }
-
-        /* Notícias Ticker */
         .news-ticker {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
-            background: rgba(29, 29, 31, 0.95); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border-top: 0.5px solid rgba(255,255,255,0.1); display: flex; align-items: center; overflow: hidden; z-index: 100;
-            padding-bottom: env(safe-area-inset-bottom);
+            background: rgba(29, 29, 31, 0.95); backdrop-filter: blur(20px); border-top: 0.5px solid rgba(255,255,255,0.1);
+            display: flex; align-items: center; overflow: hidden; z-index: 100; padding-bottom: env(safe-area-inset-bottom);
         }
         .ticker-wrap { width: 100%; overflow: hidden; white-space: nowrap; }
         .ticker-move { display: inline-block; animation: ticker 60s linear infinite; }
         .ticker-item { display: inline-block; padding: 0 30px; font-size: 14px; color: white; }
         .ticker-source { font-weight: bold; color: #0A84FF; }
         @keyframes ticker { 0% { transform: translate3d(100%, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
-
-        /* --- MODAL DE CARTEIRA (EDITAR) --- */
-        #portfolio-modal {
+        #portfolio-modal, #detail-view {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); z-index: 6000;
-            display: flex; flex-direction: column;
-            transform: translateY(100%); transition: transform 0.3s ease-in-out;
-            padding-top: max(20px, env(safe-area-inset-top));
+            background-color: var(--bg-color); z-index: 6000; display: flex; flex-direction: column;
+            transform: translateY(100%); transition: transform 0.3s ease-in-out; padding-top: max(20px, env(safe-area-inset-top));
         }
-        #portfolio-modal.active { transform: translateY(0); }
-        
+        #portfolio-modal.active, #detail-view.active { transform: translateY(0); }
         .modal-header { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .modal-title { font-size: 22px; font-weight: 800; }
         .portfolio-list { flex: 1; overflow-y: auto; padding: 0 20px 40px 20px; }
-        
-        .portfolio-item {
-            background: var(--card-bg); padding: 15px; border-radius: 12px;
-            margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
-        }
-        .p-input {
-            width: 100px; padding: 8px; border-radius: 8px; border: 1px solid var(--text-secondary);
-            font-size: 16px; background: var(--bg-color); color: var(--text-primary); text-align: right;
-        }
-
-        /* --- TELA DE DETALHE (GRÁFICO) --- */
-        #detail-view {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--bg-color); z-index: 5000;
-            display: flex; flex-direction: column;
-            transform: translateY(100%); transition: transform 0.3s ease-in-out;
-            padding-top: max(20px, env(safe-area-inset-top));
-        }
-        #detail-view.active { transform: translateY(0); }
-        
+        .portfolio-item { background: var(--card-bg); padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;}
+        .p-input { width: 100px; padding: 8px; border-radius: 8px; border: 1px solid var(--text-secondary); font-size: 16px; background: var(--bg-color); color: var(--text-primary); text-align: right; }
         .detail-header { padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-        .close-btn {
-            background: rgba(128,128,128,0.2); border: none; width: 32px; height: 32px;
-            border-radius: 50%; color: var(--text-primary); font-size: 16px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
-        }
+        .close-btn { background: rgba(128,128,128,0.2); border: none; width: 32px; height: 32px; border-radius: 50%; color: var(--text-primary); font-size: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         .detail-info { text-align: center; }
         .detail-price { font-size: 32px; font-weight: 800; margin: 5px 0; }
         .detail-ticker { color: var(--text-secondary); font-weight: 600; text-transform: uppercase; }
-        
         .chart-controls { display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; padding: 0 20px; }
-        .period-btn {
-            background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2);
-            padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600;
-            color: var(--text-primary); transition: all 0.2s;
-        }
+        .period-btn { background: var(--card-bg); border: 1px solid rgba(128,128,128,0.2); padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; color: var(--text-primary); transition: all 0.2s; }
         .period-btn.active { background: var(--accent-color); color: white; border-color: var(--accent-color); }
-        
-        .chart-container {
-            flex: 1; padding: 10px; position: relative;
-            background: var(--card-bg); border-radius: 24px 24px 0 0;
-            box-shadow: 0 -4px 20px rgba(0,0,0,0.05); margin-top: 10px;
-        }
-
+        .chart-container { flex: 1; padding: 10px; position: relative; background: var(--card-bg); border-radius: 24px 24px 0 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.05); margin-top: 10px; }
     </style>
 </head>
 <body>
-
     <div id="lock-screen">
         <div class="lock-content">
             <div style="font-size: 40px; margin-bottom: 20px;">🔒</div>
@@ -209,71 +135,56 @@
                 <div class="user-info">
                     <h1>Vanderly</h1>
                     <div class="wallet-total" id="grand-total">R$ 0,00</div>
+                    <p id="last-update">Atualizando...</p>
                 </div>
             </div>
             <div class="header-actions">
-                <div class="icon-btn" onclick="openPortfolio()">
-                    <i class="fa-solid fa-wallet"></i>
-                </div>
-                <div class="icon-btn" onclick="fetchData()">
-                    <i class="fa-solid fa-rotate-right"></i>
-                </div>
+                <div class="icon-btn" onclick="openPortfolio()"><i class="fa-solid fa-wallet"></i></div>
+                <div class="icon-btn" onclick="fetchData()"><i class="fa-solid fa-rotate-right"></i></div>
             </div>
         </header>
-
         <div class="grid" id="cards-container"></div>
-
-        <div class="news-ticker">
-            <div class="ticker-wrap">
-                <div class="ticker-move" id="news-content"></div>
-            </div>
-        </div>
+        <div class="news-ticker"><div class="ticker-wrap"><div class="ticker-move" id="news-content"></div></div></div>
     </div>
 
     <div id="portfolio-modal">
         <div class="modal-header">
-            <button class="close-btn" onclick="closePortfolio()">Cancelar</button>
+            <button class="close-btn" style="width:auto; padding:0 15px; border-radius:15px;" onclick="closePortfolio()">Voltar</button>
             <div class="modal-title">Minha Carteira</div>
             <button class="close-btn" style="color: var(--accent-color); background: transparent; font-weight: bold; width: auto;" onclick="savePortfolio()">Salvar</button>
         </div>
-        <div class="portfolio-list" id="portfolio-inputs">
-            </div>
+        <div class="portfolio-list" id="portfolio-inputs"></div>
     </div>
 
     <div id="detail-view">
         <div class="detail-header">
             <button class="close-btn" onclick="closeDetail()"><i class="fa-solid fa-xmark"></i></button>
             <div class="detail-info">
-                <div class="detail-ticker" id="detail-ticker">PETR4</div>
-                <div style="font-size: 12px; opacity: 0.7;" id="detail-name">Petrobras</div>
+                <div class="detail-ticker" id="detail-ticker">TICKER</div>
+                <div style="font-size: 12px; opacity: 0.7;" id="detail-name">Nome</div>
             </div>
             <div style="width: 32px;"></div>
         </div>
-        
         <div style="text-align: center; margin-bottom: 20px;">
-            <div class="detail-price" id="detail-price">R$ 35,00</div>
-            <div id="detail-change" style="font-weight: 600; font-size: 16px;">+1.50%</div>
+            <div class="detail-price" id="detail-price">R$ 0,00</div>
+            <div id="detail-change" style="font-weight: 600; font-size: 16px;">0.00%</div>
         </div>
-
         <div class="chart-controls">
             <button class="period-btn active" onclick="changePeriod('1d')">1D</button>
             <button class="period-btn" onclick="changePeriod('5d')">5D</button>
             <button class="period-btn" onclick="changePeriod('1mo')">1M</button>
             <button class="period-btn" onclick="changePeriod('1y')">1A</button>
         </div>
-
         <div class="chart-container">
             <canvas id="assetChart"></canvas>
             <div id="chart-loading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;">Carregando...</div>
         </div>
     </div>
 
-  <script>
-        // --- CONFIGURAÇÃO ---
-        const MY_PASSWORD = '0000'; 
-        
-        // COLE SEU TOKEN DA BRAPI AQUI DENTRO DAS ASPAS:
-        let brapiToken = '4cC5ecuq416RSfKLHm3aRX'; 
+    <script>
+        // Senha e Token já inseridos para você!
+        const MY_PASSWORD = '1234'; 
+        const brapiToken = '4cC5ecuq416RSfKLHm3aRX'; 
 
         const assets = [
             { id: 'USD', type: 'currency', name: 'Dólar Comercial' },
@@ -293,12 +204,10 @@
             { source: 'B3', title: 'Veja os destaques da bolsa brasileira hoje' }
         ];
 
-        // --- VARIÁVEIS GLOBAIS ---
         let currentDetailAsset = null;
         let myChart = null;
         let userQuantities = {}; 
 
-        // --- SISTEMA DE LOGIN ---
         function checkPassword() {
             if(document.getElementById('user-password').value === MY_PASSWORD) {
                 unlockApp();
@@ -317,12 +226,9 @@
             if(localStorage.getItem('is_logged_in') === 'true') unlockApp();
         }
 
-        // --- CARTEIRA (QUANTIDADES) ---
         function loadQuantities() {
             const saved = localStorage.getItem('user_portfolio');
-            if (saved) {
-                userQuantities = JSON.parse(saved);
-            }
+            if (saved) userQuantities = JSON.parse(saved);
         }
 
         function openPortfolio() {
@@ -345,9 +251,7 @@
             document.getElementById('portfolio-modal').classList.add('active');
         }
 
-        function closePortfolio() {
-            document.getElementById('portfolio-modal').classList.remove('active');
-        }
+        function closePortfolio() { document.getElementById('portfolio-modal').classList.remove('active'); }
 
         function savePortfolio() {
             assets.forEach(asset => {
@@ -364,29 +268,23 @@
             fetchData(); 
         }
 
-        // --- APP ---
         function initApp() {
             renderSkeleton();
             renderNews();
             fetchData();
-            // Aumentado para 5 minutos (300.000 ms) para não estourar o limite da Brapi
-            setInterval(fetchData, 300000); 
+            setInterval(fetchData, 300000); // 5 minutos para não bloquear API
         }
 
         function renderSkeleton() {
             const container = document.getElementById('cards-container');
             container.innerHTML = '';
-            assets.forEach(asset => {
-                container.innerHTML += createCardHTML(asset, null, true);
-            });
+            assets.forEach(asset => { container.innerHTML += createCardHTML(asset, null, true); });
         }
 
         function renderNews() {
             const newsContainer = document.getElementById('news-content');
             let html = '';
-            news.forEach(n => {
-                html += `<div class="ticker-item"><span class="ticker-source">${n.source}:</span> ${n.title}</div>`;
-            });
+            news.forEach(n => { html += `<div class="ticker-item"><span class="ticker-source">${n.source}:</span> ${n.title}</div>`; });
             newsContainer.innerHTML = html + html + html + html; 
         }
 
@@ -397,40 +295,30 @@
             let coinsData = null;
             let stockMap = {};
 
-            // 1. Busca Moedas (AwesomeAPI) - Blindado
+            // 1. AwesomeAPI (Dólar / Bitcoin)
             try {
                 const coinsResponse = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL,BTC-BRL,BTC-USD');
-                if (coinsResponse.ok) {
-                    coinsData = await coinsResponse.json();
-                }
-            } catch (error) {
-                console.error("Erro nas moedas:", error);
-            }
+                if (coinsResponse.ok) coinsData = await coinsResponse.json();
+            } catch (error) { console.error("Erro moedas:", error); }
 
-            // 2. Busca Ações (Brapi) - Blindado
+            // 2. Brapi (Ações)
             try {
-                if(brapiToken && brapiToken !== 'COLE_SEU_TOKEN_AQUI') {
-                    const tickers = assets.filter(a => a.type === 'stock' || a.type === 'index').map(a => a.id).join(',');
-                    const url = `https://brapi.dev/api/quote/${tickers},^BVSP?token=${brapiToken}`;
-                    
-                    const stocksResponse = await fetch(url);
-                    if (stocksResponse.ok) {
-                        const stocksJson = await stocksResponse.json();
-                        if(stocksJson.results) {
-                            stocksJson.results.forEach(s => {
-                                let cleanSymbol = s.symbol.replace('^BVSP', 'IBOV');
-                                stockMap[cleanSymbol] = s;
-                            });
-                        }
-                    } else {
-                        console.error("Limite da Brapi atingido ou token inválido.");
+                const tickers = assets.filter(a => a.type === 'stock' || a.type === 'index').map(a => a.id).join(',');
+                const url = `https://brapi.dev/api/quote/${tickers},^BVSP?token=${brapiToken}`;
+                
+                const stocksResponse = await fetch(url);
+                if (stocksResponse.ok) {
+                    const stocksJson = await stocksResponse.json();
+                    if(stocksJson.results) {
+                        stocksJson.results.forEach(s => {
+                            let cleanSymbol = s.symbol.replace('^BVSP', 'IBOV');
+                            stockMap[cleanSymbol] = s;
+                        });
                     }
                 }
-            } catch (error) {
-                console.error("Erro nas ações:", error);
-            }
+            } catch (error) { console.error("Erro ações:", error); }
 
-            // 3. Renderiza os Cards
+            // 3. Renderiza Interface
             const container = document.getElementById('cards-container');
             container.innerHTML = '';
             let grandTotal = 0; 
@@ -439,7 +327,6 @@
                 let data = null;
                 let priceBRL = 0; 
 
-                // Processa Moedas
                 if (coinsData) {
                     if (asset.id === 'USD' && coinsData.USDBRL) {
                         priceBRL = parseFloat(coinsData.USDBRL.bid);
@@ -450,13 +337,11 @@
                         const valBrl = priceBRL.toLocaleString('pt-BR', {style:'currency', currency:'BRL', minimumFractionDigits:0});
                         data = { 
                             displayValue: `<span style="font-size: 0.9em">${valUsd}</span> <span class="price-secondary">/ ${valBrl}</span>`,
-                            change: parseFloat(coinsData.BTCUSD.pctChange),
-                            symbol: '', price: parseFloat(coinsData.BTCUSD.bid) 
+                            change: parseFloat(coinsData.BTCUSD.pctChange), symbol: '', price: parseFloat(coinsData.BTCUSD.bid) 
                         };
                     }
                 }
 
-                // Processa Ações
                 if (asset.type === 'stock' || asset.type === 'index') {
                     const s = stockMap[asset.id];
                     if (s) {
@@ -465,12 +350,10 @@
                     }
                 }
                 
-                // Calcula Patrimônio
                 const qty = userQuantities[asset.id] || 0;
                 const totalValue = qty * priceBRL;
                 if (asset.id !== 'IBOV' && data) grandTotal += totalValue;
 
-                // Cria o Card
                 const cardDiv = document.createElement('div');
                 cardDiv.innerHTML = createCardHTML(asset, data, false, qty, totalValue);
                 if(data) cardDiv.firstElementChild.onclick = () => openDetail(asset, data);
@@ -484,7 +367,7 @@
 
         function createCardHTML(asset, data, loading = false, qty = 0, totalValue = 0) {
             if (loading) return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="price-container"><div class="price" style="opacity:0.3">---</div></div></div>`;
-            if (!data) return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="name" style="color:var(--down-color);">Sem dados (Limite/Erro)</div></div>`;
+            if (!data) return `<div class="card"><div class="card-header"><span class="ticker">${asset.id}</span></div><div class="name" style="color:var(--down-color);">Sem dados</div></div>`;
             
             const isUp = data.change >= 0;
             const badgeClass = isUp ? 'up' : 'down';
@@ -531,7 +414,6 @@
             </div>`;
         }
 
-        // --- DETALHES & GRÁFICOS ---
         function openDetail(asset, currentData) {
             currentDetailAsset = asset;
             document.getElementById('detail-view').classList.add('active');
@@ -552,10 +434,7 @@
             loadChart('1d');
         }
 
-        function closeDetail() {
-            document.getElementById('detail-view').classList.remove('active');
-        }
-
+        function closeDetail() { document.getElementById('detail-view').classList.remove('active'); }
         function changePeriod(period) {
             document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
@@ -567,12 +446,9 @@
             const loader = document.getElementById('chart-loading');
             if (myChart) myChart.destroy();
             loader.style.display = 'block';
-
             try {
-                loader.innerText = "Gráfico histórico em manutenção.";
-            } catch (e) {
-                console.error(e);
-            }
+                loader.innerText = "Gráficos de volta em breve.";
+            } catch (e) { console.error(e); }
         }
     </script>
 </body>
