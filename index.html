@@ -181,9 +181,11 @@
         </div>
     </div>
 
-    <script>
-        // Senha e Token já inseridos para você!
+   <script>
+        // --- CONFIGURAÇÃO ---
         const MY_PASSWORD = '1234'; 
+        
+        // Já coloquei a sua chave aqui certinha, com as aspas!
         const brapiToken = '4cC5ecuq416RSfKLHm3aRX'; 
 
         const assets = [
@@ -272,7 +274,7 @@
             renderSkeleton();
             renderNews();
             fetchData();
-            setInterval(fetchData, 300000); // 5 minutos para não bloquear API
+            setInterval(fetchData, 300000); // Atualiza a cada 5 minutos
         }
 
         function renderSkeleton() {
@@ -301,10 +303,15 @@
                 if (coinsResponse.ok) coinsData = await coinsResponse.json();
             } catch (error) { console.error("Erro moedas:", error); }
 
-            // 2. Brapi (Ações)
+            // 2. Brapi (Ações) - CORRIGIDO
             try {
-                const tickers = assets.filter(a => a.type === 'stock' || a.type === 'index').map(a => a.id).join(',');
-                const url = `https://brapi.dev/api/quote/${tickers},^BVSP?token=${brapiToken}`;
+                // Removemos o 'IBOV' puro que causava erro, enviando apenas o código aceito pela B3
+                const tickersValidos = assets
+                    .filter(a => a.type === 'stock' || a.type === 'index')
+                    .map(a => a.id === 'IBOV' ? '^BVSP' : a.id)
+                    .join(',');
+
+                const url = `https://brapi.dev/api/quote/${tickersValidos}?token=${brapiToken}`;
                 
                 const stocksResponse = await fetch(url);
                 if (stocksResponse.ok) {
