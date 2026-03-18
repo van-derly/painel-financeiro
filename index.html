@@ -181,11 +181,9 @@
         </div>
     </div>
 
-   <script>
+  <script>
         // --- CONFIGURAÇÃO ---
         const MY_PASSWORD = '1234'; 
-        
-        // Já coloquei a sua chave aqui certinha, com as aspas!
         const brapiToken = '4cC5ecuq416RSfKLHm3aRX'; 
 
         const assets = [
@@ -303,26 +301,26 @@
                 if (coinsResponse.ok) coinsData = await coinsResponse.json();
             } catch (error) { console.error("Erro moedas:", error); }
 
-            // 2. Brapi (Ações) - CORRIGIDO
+            // 2. Brapi (Ações) - CORRIGIDO: Buscando um por um para evitar que a falha de um quebre os outros
             try {
-                // Removemos o 'IBOV' puro que causava erro, enviando apenas o código aceito pela B3
-                const tickersValidos = assets
-                    .filter(a => a.type === 'stock' || a.type === 'index')
-                    .map(a => a.id === 'IBOV' ? '^BVSP' : a.id)
-                    .join(',');
-
-                const url = `https://brapi.dev/api/quote/${tickersValidos}?token=${brapiToken}`;
+                const acoes = assets.filter(a => a.type === 'stock' || a.type === 'index');
                 
-                const stocksResponse = await fetch(url);
-                if (stocksResponse.ok) {
-                    const stocksJson = await stocksResponse.json();
-                    if(stocksJson.results) {
-                        stocksJson.results.forEach(s => {
-                            let cleanSymbol = s.symbol.replace('^BVSP', 'IBOV');
-                            stockMap[cleanSymbol] = s;
-                        });
+                await Promise.all(acoes.map(async (asset) => {
+                    let tickerParaBusca = asset.id === 'IBOV' ? '^BVSP' : asset.id;
+                    let url = `https://brapi.dev/api/quote/${tickerParaBusca}?token=${brapiToken}`;
+                    
+                    try {
+                        const resposta = await fetch(url);
+                        if (resposta.ok) {
+                            const dados = await resposta.json();
+                            if(dados.results && dados.results.length > 0) {
+                                stockMap[asset.id] = dados.results[0];
+                            }
+                        }
+                    } catch(e) {
+                        console.error("Falha ao baixar o ticker: " + tickerParaBusca);
                     }
-                }
+                }));
             } catch (error) { console.error("Erro ações:", error); }
 
             // 3. Renderiza Interface
